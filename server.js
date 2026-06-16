@@ -4,17 +4,17 @@ const cors = require('cors');
 
 const app = express();
 
-// Middleware
+// Middleware (Yeh aapki frontend website ko connect karne ke liye zaroori hai)
 app.use(cors());
 app.use(express.json());
 
-// MongoDB Connection (Vercel direct Environment Variable se uthaye ga)
+// MongoDB Connection
 const mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI)
-  .then(() => console.log('🔥 MongoDB Cloud Connected Successfully!'))
+  .then(() => console.log('🔥 MongoDB Connected Successfully!'))
   .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
-// Schema (Data Structure for Contact Form)
+// Schema (Contact Form ke data ke liye)
 const ContactSchema = new mongoose.Schema({
     name: String,
     email: String,
@@ -24,29 +24,33 @@ const ContactSchema = new mongoose.Schema({
 
 const Contact = mongoose.model('Contact', ContactSchema);
 
-// Main Route (Jo browser par dikhta hai)
+// Base Route
 app.get('/', (req, res) => {
-    res.send('🚀 Backend Server Is Running Smoothly on Vercel!');
+    res.send('🚀 SKGHOST Backend Server is Live and Ready!');
 });
 
-// API Route to Save Contact Form Data
+// API Route (Yeh route aapki frontend repo se data receive karega)
 app.post('/api/contact', async (req, res) => {
     try {
         const { name, email, message } = req.body;
+        
+        // Validation
+        if (!name || !email || !message) {
+            return res.status(400).json({ success: false, message: 'All fields are required!' });
+        }
+
         const newContact = new Contact({ name, email, message });
         await newContact.save();
-        res.status(201).json({ success: true, message: 'Data Saved to MongoDB!' });
+        
+        res.status(201).json({ success: true, message: 'Message Saved to MongoDB Successfully!' });
     } catch (error) {
         res.status(500).json({ success: false, error: error.message });
     }
 });
 
-// 🔥 VERCEL KE LIYE ZAROORI: Export the app instance
+// Vercel Export
 module.exports = app;
 
-// Local testing ke liye port (Vercel ise automatically handle kar leta hai)
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`🚀 Server started on port ${PORT}`);
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 
